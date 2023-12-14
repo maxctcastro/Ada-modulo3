@@ -28,11 +28,16 @@ class Cliente {
         const pedido = new Pedido(this,restaurante, itens);
         pedido.atualizarStatus("em andamento"); 
         this.pedidos.push(pedido);
+        console.log(`\nPedido do ${this.nome} feito!.`);
+        restaurante.receberPedido(this,itens)
         return pedido;
       }
   
-    consultarPedidos() {
-      return this.pedidos;
+      consultarPedidos() {
+        console.log(`\n\x1b[4mPedidos ${this.nome}:\x1b[0m\n`);
+        this.pedidos.forEach((pedido, index) => {
+            console.log(`Pedido ${index + 1}: \n Restaurante ${pedido.restaurante.nome} \n Itens: ${JSON.stringify(pedido.itens)}}`);
+        });
     }
 
   }
@@ -95,21 +100,24 @@ class Cliente {
     }
   
     receberPedido(cliente, itens) {
-        const pedido = new Pedido(cliente, this, itens);
-           
-        if (pedido.status === "pendente") {
+    
+      const pedidoExistente = cliente.pedidos.find(pedido => pedido.restaurante === this && pedido.status === "em andamento");
+
+      if (pedidoExistente) {
+          console.log(`\nPedido do ${cliente.nome} recebido pelo ${this.nome} e em andamento.`);
+      } else {
+          const pedido = new Pedido(cliente, this, itens);
           pedido.atualizarStatus("em andamento");
+          cliente.pedidos.push(pedido);
+          cliente.fazerPedido(this,itens)
           console.log(`\nPedido do ${cliente.nome} recebido e em andamento.`);
-        } else {
-          console.log(`Pedido do ${cliente.nome} já está em andamento ou finalizado.`);
-        }
-      
-        return pedido;
       }
-    }
+  }
+}
+    
   // Exemplo de Uso:
 const cliente1 = new Cliente("João", "Rua A, 123");
-const cliente2 = new Cliente("Maria", "Rua B, 456");  // Novo cliente
+const cliente2 = new Cliente("Maria", "Rua B, 456"); 
 const restaurante1 = new Restaurante("Restaurante A", {
   Pizza: 15,
   Hamburguer: 10,
@@ -121,35 +129,32 @@ const restaurante2 = new Restaurante("Restaurante B", {
   Shimeji: 20,
 });
 
-// Exibir menu do restaurante
+
+
 restaurante1.exibirMenu();
 restaurante2.exibirMenu();
 
 // Cliente1 faz pedidos em mais de um restaurante
+
 const pedidoCliente1Restaurante1 = cliente1.fazerPedido(restaurante1, { Pizza: 2, Hamburguer: 1 });
 const pedidoCliente1Restaurante2 = cliente1.fazerPedido(restaurante2, { Sushi: 2, Temaki: 1 });
+const totalPedidosCliente1 = pedidoCliente1Restaurante1.calcularTotal() + pedidoCliente1Restaurante2.calcularTotal()
 
-// Restaurante recebe o pedido do Cliente1
-restaurante1.receberPedido(cliente1, { Pizza: 2, Hamburguer: 1 });
+// Exibir os pedidos do Cliente1
+
+cliente1.consultarPedidos();
+
 
 // Cliente2 faz um pedido diferente
 const pedidoCliente2Restaurante1 = cliente2.fazerPedido(restaurante1, { Salada: 1, Hamburguer: 2 });
 
-// Restaurante recebe o pedido do Cliente2
-restaurante1.receberPedido(cliente2, { Salada: 1, Hamburguer: 2 });
 
-// Exibir os pedidos do Cliente1
-console.log("\nPedidos do Cliente1:");
-console.log(cliente1.consultarPedidos());
-
-// Exibir os pedidos do Cliente2
-console.log("\nPedidos do Cliente2:");
-console.log(cliente2.consultarPedidos());
-
+cliente2.consultarPedidos();
+console.log('')
 // Calcular o total de cada pedido do Cliente1
 console.log(`Total do pedido do Cliente1 para o Restaurante1: R$${pedidoCliente1Restaurante1.calcularTotal()}`);
 console.log(`Total do pedido do Cliente1 para o Restaurante2: R$${pedidoCliente1Restaurante2.calcularTotal()}`);
-console.log (`Total de pedidos do Cliente1: R$${pedidoCliente1Restaurante1.calcularTotal()+pedidoCliente1Restaurante2.calcularTotal()}`)
+console.log (`Total de pedidos do Cliente1: R$${totalPedidosCliente1}`)
 
 // Calcular o total do pedido do Cliente2
 console.log(`Total do pedido do Cliente2: R$${pedidoCliente2Restaurante1.calcularTotal()}`);
